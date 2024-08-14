@@ -416,15 +416,7 @@ static void mbio_rx_packet (modbus_message_t *msg) {
                 // process the responses (put red value into the system.var5399)
                 switch (msg->adu[1]) {
                     case ModBus_ReadDiscreteInputs:
-                        if (msg->adu[3] == 0x01) {
-                            sys.var5399 = 1;
-                        }
-                        else if (msg->adu[3] == 0x00) {
-                            sys.var5399 = 0;
-                        }
-                        else {
-                            mbio_failed(); // not sure, but other values are not expected
-                        }
+                        sys.var5399 = msg->adu[3] & 0x01;
                         break;
 
                     case ModBus_ReadCoils:
@@ -444,11 +436,13 @@ static void mbio_rx_packet (modbus_message_t *msg) {
 
                 switch (msg->adu[1]) {
                     case ModBus_ReadDiscreteInputs:
-                        if (msg->adu[3] == 0x01) {
-                            report_message("MODBUS RESPONSE: on", Message_Plain);
+                        if (msg->adu[3] & 0x01 == 0x01) {
+                            sprintf(buf, "MODBUS RESPONSE: on (0x%02X)", msg->adu[3]);
+                            report_message(buf, Message_Plain);
                         }
-                        else if (msg->adu[3] == 0x00) {
-                            report_message("MODBUS RESPONSE: off", Message_Plain);
+                        else if (msg->adu[3] & 0x01 == 0x00) {
+                            sprintf(buf, "MODBUS RESPONSE: off (0x%02X)", msg->adu[3]);
+                            report_message(buf, Message_Plain);
                         }
                         break;
 
